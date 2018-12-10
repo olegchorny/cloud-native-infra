@@ -259,4 +259,6 @@ It works! Now you can try to push the load again `fortio load -qps 9999  -c 100 
 
 Much better results than in previous attempt, but it totally makes sense, since we enabled two instances initially versus only one instance from the first experiment.
 
+And, speaking of blue/green deployment, if you are happy with version 3 of your app, you can increase the `rolloutPercent: 50` to the desired value, until you will rollout v3 for 100%.
+
 Now, delete everything and try to repeat all the steps again. Feel the power of cloud native infrastructure :) Stay tuned! 
