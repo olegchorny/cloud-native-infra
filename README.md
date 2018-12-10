@@ -1,4 +1,4 @@
-# Cloud Native Infrastructure - from zero to hero
+# Cloud Native Infrastructure - from Zero to Hero
 
 This sample shows:
 - how to deploy the Kubernetes, Istio and Knative stack (KIK)
@@ -10,18 +10,23 @@ This sample shows:
 We are going to leverage GKE cluster as a tribute to https://github.com/GIFEE/GIFEE
 
 Create cluster:
+
 ![Kubernetes](./img/1.png)
 
 2 nodes, 2vCPUs, 7.5GB memory, latest Kubernetes version and additional thing in advanced edit..
+
 ![Kubernetes](./img/2.png)
 
-Enable auto-scaling, preemtible nodes (they are almost 4 times cheaper!) and auto-upgrade
+Enable auto-scaling, preemptible nodes (they are almost 4 times cheaper!) and auto-upgrade
+
 ![Kubernetes](./img/3.png)
 
 Save settings, push the Create button and when cluster is ready push the Connect button and Run In Cloud Shell 
+
 ![Kubernetes](./img/4.png)
 
 Check the state of you cluster using `kubectl get nodes` and `kubectl get pods --all-namespaces` commands
+
 ![Kubernetes](./img/5.png)
 
 If Nodes are Ready and Pods are Running, we are good to go to the next step.
@@ -43,6 +48,7 @@ And install Istio. `kubectl apply --filename https://raw.githubusercontent.com/k
 <!-- ![Istio](./img/7.png) -->
 
 Wait until all Istio Pods will be in the Running or Completed state
+
 ![Istio](./img/8.png)
 
 And we are good to go to the Knative stage
@@ -79,7 +85,7 @@ secrets:
 
 Install Kaniko template to build containers: `kubectl apply --filename https://raw.githubusercontent.com/knative/build-templates/master/kaniko/kaniko.yaml`
 
-Apply Secret manifest: `kubectl apply --filename docker-secret.yaml` and Service Account manifest: `kubectl apply --filename service-account.yaml`
+Apply Secret manifest: `kubectl apply -f docker-secret.yaml` and Service Account manifest: `kubectl apply -f service-account.yaml`
 
 ![Knative](./img/10.png)
 
@@ -131,26 +137,31 @@ Once you see the deployment pod switch to the running state, press Ctrl+C to esc
 Knative applications exposed via knative-ingressgateway, let's figure out the external IP: `kubectl get svc knative-ingressgateway --namespace istio-system` and expected URL for our service: `kubectl get ksvc app-from-source  --output=custom-columns=NAME:.metadata.name,DOMAIN:.status.domain`
 
 Then, let's make the request to see the result: `curl -H "Host: app-from-source.default.example.com" http://{IP_ADDRESS}`
+
 ![Build and Run](./img/12.png)
 
 It works!
 
-Now I suggest you to repeat the whole process from scratch and then follow to the next step.
+Now, I suggest you to repeat the whole process from scratch and then follow to the next step.
 
 ## Auto-scaling
 
 By default, Knative will scale your application down to zero pods if there is no traffic to it during the 10-minutes range. Make a cup of coffee, drink it and the run the `kubectl get pods`. Now there is no active pods of your app. Try to curl it again and you will see how quickly it will respond:
+
 ![Auto-scaling](./img/13.png)
 
-Knative promises that it will scale you application if detects the increased load, Let's test it out using the `fortio` tool. Install it `curl -L https://github.com/fortio/fortio/releases/download/v1.3.0/fortio-linux_x64-1.3.0.tgz  | sudo tar -C / -xvzpf -` and run the server 
+Knative promises that it will scale your application if detects the increased load, Let's test it out using the `fortio` tool. Install it `curl -L https://github.com/fortio/fortio/releases/download/v1.3.0/fortio-linux_x64-1.3.0.tgz  | sudo tar -C / -xvzpf -` and run the server `fortio server &`
+
 ![Auto-scaling](./img/14.png)
 
-Now, push the traffic to our application: `fortio load -qps 9999  -c 100 -t 10m -H  "Host: app-from-source.default.example.com"  http://IP_ADDRESS`. Run the **second console** and watch for the number of pods in the default namespace: `kubectl get pods --watch`. If there are not enough nodes for our pods, GKE will provision new node for you, since we've enabled the autoscaling during the very first step. You can check the number of nodes using the `kubectl get nodes` command using third console or just wait until fortio finished the test.
+Now, push the traffic to our application: `fortio load -qps 9999  -c 100 -t 10m -H  "Host: app-from-source.default.example.com"  http://IP_ADDRESS`. Run the **second console** and watch the number of pods in the default namespace: `kubectl get pods --watch`. If there are not enough nodes for our pods, GKE will provision new node for you, since we've enabled the autoscaling during the very first step. You can check the number of nodes using the `kubectl get nodes` command using third console or just wait until fortio finished the test.
+
 ![Auto-scaling](./img/15.png)
 
 You can notice that some pods are still in the Pending mode. The reason is that we configured Kubernetes autoscaling up to 4 nodes and GKE is not able to provision 5th node to host required pods. So that we can control our costs and make sure we never went wild. 
 
 When fortio finished the test, we can analyze the result:
+
 ![Auto-scaling](./img/16.png)
 
 As you can see, we were not able to serve 1.6% of all requests. Also, 50% of our calls were finished in less than 0.15 seconds, 75% - in less than 0.27s, 90% in less than 0.45 and 99 were served in more than 1 second. 
@@ -243,6 +254,7 @@ Main difference is in the new keyword `release` whre we've defined `revisions: [
 ![Blue\Green](./img/18.png)
 
 It works! Now you can try to push the load again `fortio load -qps 9999  -c 100 -t 10m -H  "Host: app-from-source.default.example.com"  http://IP_ADDRESS` and check how both versions will be scaled by Knative in order to serve our requests:
+
 ![Blue\Green](./img/19.png)
 
 Much better results than in previous attempt, but it totally makes sense, since we enabled two instances initially versus only one instance from the first experiment.
