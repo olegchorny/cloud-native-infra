@@ -249,7 +249,7 @@ spec:
             - name: SIMPLE_MSG
               value: "Hello from the samle app v3!"
 ```
-Main difference is in the new keyword `release` whre we've defined `revisions: ["app-from-source-00002", "app-from-source-00003"]` and `rolloutPercent: 50`. Now, let's apply this definition `kubectl apply -f service3.yaml` and check the result:
+The main difference is in the new keyword `release` where we've defined `revisions: ["app-from-source-00002", "app-from-source-00003"]` and `rolloutPercent: 50`. Now, let's apply this definition `kubectl apply -f service3.yaml` and check the result:
 
 ![Blue\Green](./img/18.png)
 
