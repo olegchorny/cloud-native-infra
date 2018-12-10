@@ -243,3 +243,8 @@ Main difference is in the new keyword `release` whre we've defined `revisions: [
 ![Blue\Green](./img/18.png)
 
 It works! Now you can try to push the load again `fortio load -qps 9999  -c 100 -t 10m -H  "Host: app-from-source.default.example.com"  http://IP_ADDRESS` and check how both versions will be scaled by Knative in order to serve our requests:
+![Blue\Green](./img/19.png)
+
+Much better results than in previous attempt, but it totally makes sense, since we enabled two instances initially versus only one instance from the first experiment.
+
+Now, delete everything and try to repeat all the steps again. Feel the power of cloud native infrastructure :) Stay tuned! 
